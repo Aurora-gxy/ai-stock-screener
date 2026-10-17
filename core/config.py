@@ -2,6 +2,15 @@
 from __future__ import annotations
 
 import os
+import time
+
+# 扶摇时间戳以 Asia/Shanghai 为准（日 K 的 date_ms 是北京时间 0 点）。
+# 云服务器默认 UTC，会把日期显示成前一天、把快照时间显示早 8 小时，所以统一设为北京时间。
+os.environ["TZ"] = "Asia/Shanghai"
+try:
+    time.tzset()
+except AttributeError:  # Windows 无 tzset
+    pass
 
 try:  # 本地开发读取 .env
     from dotenv import load_dotenv

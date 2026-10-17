@@ -11,3 +11,5 @@
 - storage.py    方案保存 / 监控任务
 - backtest.py   历史回看
 """
+
+from . import config as _config  # noqa: E402,F401  先加载配置：统一北京时间时区

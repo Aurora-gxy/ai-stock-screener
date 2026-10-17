@@ -259,7 +259,7 @@ if res:
     rows = res["rows"]
     st.divider()
     st.subheader(f"④ 筛选结果｜{ds['universe']}（{len(ds['stocks'])} 只）")
-    st.caption(f"数据时点：行情快照 {ds.get('snapshot_asof')}；成分股 {ds.get('constituents_asof', '未知')}；"
+    st.caption(f"数据时点（北京时间）：行情快照 {ds.get('snapshot_asof')}；成分股 {ds.get('constituents_asof', '未知')}；"
                f"K 线、财报时点见每只股票明细。来源：扶摇金融数据 API。")
     if ds["errors"]:
         st.warning("部分数据获取异常（受影响的股票会被归入「无法判断」，不会被当作通过）：\n" +

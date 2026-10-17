@@ -4,8 +4,8 @@
 
 把「经营改善、估值合理、走势相对稳定」这样的模糊选股意图，转成**用户可检查、可修改、可执行**的数据条件，在扶摇真实数据上筛选，并解释每只股票**为何入选、为何被排除、条件变化会带来什么影响**。
 
-- 在线体验：`<部署后填写 Streamlit Cloud URL>`
-- 代码仓库：`<填写 GitHub 仓库地址>`
+- 在线体验：https://ai-stock-screener-xinyi.streamlit.app （长时间无人访问会休眠，打开后点击唤醒按钮，约 30 秒）
+- 代码仓库：https://github.com/Aurora-gxy/ai-stock-screener
 
 ---
 
