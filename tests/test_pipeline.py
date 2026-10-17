@@ -235,3 +235,22 @@ def test_storage_roundtrip():
     m = storage.create_monitor(s, "每个交易日", [{"thscode": "A", "name": "a"}])
     run = storage.record_run(m["id"], [{"thscode": "B", "name": "b"}], [], "x")
     assert [x["thscode"] for x in run["added"]] == ["B"] and [x["thscode"] for x in run["removed"]] == ["A"]
+
+
+def test_llm_cannot_rewrite_explicit_numbers():
+    """真实案例回归：AI 把矛盾条件改写成区间，必须还原并触发冲突识别。"""
+    fake = json.dumps({"conditions": [
+        {"metric": "pe", "op": "between", "value": 10, "value2": 20, "origin_phrase": "市盈率低于10倍，市盈率高于20倍"}]})
+    r = intent.parse_intent("市盈率低于10倍，市盈率高于20倍", llm_call=lambda s, u: fake)
+    assert r["source"] == "llm" and r.get("explicit_overridden")
+    got = sorted((c["op"], c["value"]) for c in r["conditions"])
+    assert got == [("<=", 10.0), (">=", 20.0)]
+    assert conflicts.has_blocking(conflicts.detect_conflicts(r["conditions"]))
+    assert any("AI 改写" in n for n in r["notes"])
+
+
+def test_llm_consistent_explicit_no_warning():
+    fake = json.dumps({"conditions": [{"metric": "pe", "op": "<=", "value": 15}]})
+    r = intent.parse_intent("市盈率低于15倍", llm_call=lambda s, u: fake)
+    assert not r.get("explicit_overridden")
+    assert [(c["metric"], c["op"], c["value"]) for c in r["conditions"]] == [("pe", "<=", 15.0)]

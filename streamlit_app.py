@@ -166,6 +166,8 @@ if p:
     # ---- 解析来源与核对
     if p["source"] == "llm":
         st.success(f"✅ 由 AI（{config.llm_model()}）解析，输出已通过指标白名单与数值校验。")
+        if p.get("explicit_overridden"):
+            st.warning("⚠️ AI 改写了你明确给出的数值条件，已按原文还原（明确数字以确定性解析为准）。详见下方「AI 解析核对」。")
     else:
         why = f"AI 解析失败：{p['llm_error']}" if p.get("llm_error") else "未配置 AI"
         st.info(f"ℹ️ 使用规则解析（{why}）。规则解析完全确定，可复现。")
@@ -179,7 +181,7 @@ if p:
                 st.markdown("- AI 解析与规则解析结果一致。")
             for c in p["conditions"]:
                 if c.get("rationale"):
-                    st.markdown(f"- **{describe_condition(c)}**：{c['rationale']}")
+                    st.markdown(f"- **{describe_condition(c)}**：{c['rationale'].replace('~', '～')}")
         for n in p.get("notes", []):
             st.markdown(f"- ⚠️ {n}")
         if p.get("llm_raw"):

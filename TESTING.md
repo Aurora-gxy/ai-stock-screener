@@ -44,6 +44,7 @@ pytest -q
 | AI 异常 | LLM 发明指标、阈值非数字 → 丢弃并提示 | `test_llm_hallucinated_metric_dropped` |
 | AI 异常 | LLM 超时 → 规则兜底并显示原因 | `test_llm_exception_falls_back` |
 | AI 异常 | AI 摘要出现引擎结果中没有的数字 → 标红；违规表述被移除 | `test_ai_summary_number_verification` |
+| 冲突 | AI 把矛盾的明确数值改写为区间 → 还原原文并触发冲突（真实案例回归） | `test_llm_cannot_rewrite_explicit_numbers` |
 | 冲突 | 同一指标区间无交集 → 阻止执行 | `test_conflict_same_metric`、`test_app_smoke::test_conflict_blocks_run` |
 | 冲突 | 「近 60 日跌 ≥20%」与「120 日回撤 ≤10%」数学矛盾 | `test_conflict_cross_metric_drawdown` |
 | 冲突 | 高增长 + 低估值 → 张力提示（不阻止） | `test_tension_growth_vs_cheap` |

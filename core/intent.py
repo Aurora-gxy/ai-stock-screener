@@ -309,6 +309,33 @@ def diff_parses(a: dict, b: dict) -> list[str]:
     return out
 
 
+def enforce_explicit(llm: dict, rule: dict) -> None:
+    """用户明确写出的数值条件以确定性解析为准，AI 不得改写。
+
+    真实案例：输入「市盈率低于10倍，市盈率高于20倍」（逻辑矛盾），AI 将其改写为「PE 介于 10～20」，
+    语义相反且绕过了冲突识别。因此：凡规则解析识别到的显式数值条件，覆盖 AI 在同一指标上的输出。
+    """
+    from .metrics import describe_condition
+    explicit = [c for c in rule["conditions"] if c.get("kind") == "explicit"]
+    if not explicit:
+        return
+    metrics = {c["metric"] for c in explicit}
+    replaced = [c for c in llm["conditions"] if c["metric"] in metrics]
+    kept = [c for c in llm["conditions"] if c["metric"] not in metrics]
+
+    def sig(cs):
+        return sorted((c["metric"], c["op"], float(c["value"]),
+                       None if c.get("value2") is None else float(c["value2"])) for c in cs)
+
+    if sig(replaced) != sig(explicit):
+        llm["notes"].append(
+            "⚠️ AI 改写了你明确给出的数值条件，已还原为原文："
+            + "；".join(describe_condition(c) for c in replaced) + " → "
+            + "；".join(describe_condition(c) for c in explicit))
+        llm["explicit_overridden"] = True
+    llm["conditions"] = kept + explicit
+
+
 def parse_intent(text: str, llm_call=None) -> dict:
     """主入口：合规检查 → 规则解析 → （可选）LLM 解析并校验 → 选择结果 + 差异。"""
     compliance = check_input(text)
@@ -325,6 +352,7 @@ def parse_intent(text: str, llm_call=None) -> dict:
             for u in rule["unsupported"]:
                 if u["label"] not in have and u["phrase"] not in have:
                     llm["unsupported"].append(u)
+            enforce_explicit(llm, rule)
             result = llm
             universe = llm.get("universe") or universe
         except Exception as e:  # LLM 失败 → 规则兜底，并显式告知
