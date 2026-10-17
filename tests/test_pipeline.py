@@ -254,3 +254,15 @@ def test_llm_consistent_explicit_no_warning():
     r = intent.parse_intent("市盈率低于15倍", llm_call=lambda s, u: fake)
     assert not r.get("explicit_overridden")
     assert [(c["metric"], c["op"], c["value"]) for c in r["conditions"]] == [("pe", "<=", 15.0)]
+
+
+def test_llm_no_conditions_for_compliance_only_input_is_not_failure():
+    fake = json.dumps({"conditions": [], "compliance": ["不提供涨跌预测", "不承诺收益"]})
+    r = intent.parse_intent("帮我找明天会涨的股票，最好稳赚", llm_call=lambda s, u: fake)
+    assert r["source"] == "llm" and r["llm_error"] is None and r.get("no_executable")
+    assert r["conditions"] == [] and len(r["compliance"]) == 2
+
+
+def test_llm_empty_for_normal_input_still_falls_back():
+    r = intent.parse_intent("经营改善", llm_call=lambda s, u: json.dumps({"conditions": []}))
+    assert r["source"] == "rule" and r["llm_error"]

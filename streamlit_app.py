@@ -166,6 +166,9 @@ if p:
     # ---- 解析来源与核对
     if p["source"] == "llm":
         st.success(f"✅ 由 AI（{config.llm_model()}）解析，输出已通过指标白名单与数值校验。")
+        if p.get("no_executable") and not p["conditions"]:
+            st.info("ℹ️ AI 判断：这句话里没有可以用客观数据执行的筛选条件，因此未生成条件。"
+                    "可以换一种描述，例如「经营改善、估值合理、走势相对稳定」或「ROE 大于 15%、近 60 日波动率低于 30%」。")
         if p.get("explicit_overridden"):
             st.warning("⚠️ AI 改写了你明确给出的数值条件，已按原文还原（明确数字以确定性解析为准）。详见下方「AI 解析核对」。")
     else:

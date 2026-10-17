@@ -291,6 +291,10 @@ def llm_parse(text: str, llm_call) -> dict:
                                           "reason": str(u.get("reason") or "")})
     result["llm_compliance"] = [str(x) for x in (data.get("compliance") or [])]
     if not result["conditions"]:
+        # 输入只含预测 / 收益承诺等不可执行诉求时，AI 正确地不产出条件，这不是失败
+        if result["llm_compliance"] or check_input(text) or result["unsupported"]:
+            result["no_executable"] = True
+            return result
         raise ValueError("LLM 未产出任何合法条件")
     return result
 
